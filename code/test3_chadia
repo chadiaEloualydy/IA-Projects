@@ -1,0 +1,5 @@
+ligne = None
+while True:
+  (...)
+  if ligne=="":
+     break

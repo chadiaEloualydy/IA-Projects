@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Conceveur de requêtes</title>
+<script type="text/javascript">
+function requeter(verbe, chemin, entetes=null, corps=null, suite=null) {
+    httpRequest = new XMLHttpRequest();
+    chargement();
+    httpRequest.onreadystatechange = () => {
+        if (httpRequest.readyState == XMLHttpRequest.DONE) {
+            var objR = document.querySelector( "#reponse" )
+            objR.textContent = httpRequest.status+" : "+httpRequest.statusText+"\n";
+            objR.textContent += httpRequest.getAllResponseHeaders()+"\n";
+            objR.textContent += httpRequest.responseText;
+            if (typeof suite=="function")
+                suite();
+            chargement( "non" );
+        }
+    };
+    httpRequest.open( verbe, chemin, false );
+    if (entetes!=null) {
+        for (var i=0; i<entetes.length; i++) {
+            var entete = entetes[i];
+            httpRequest.setRequestHeader( entete[0], entete[1] );
+        }
+    }
+    httpRequest.send( corps );
+}
+function chargement(etat="oui") {
+    document.querySelector( "#chargement" ).setAttribute( "attendre", etat );
+}
+function tester(evt) {
+    evt.preventDefault();
+    var objM = document.querySelector( "#requete span.message" )
+    objM.textContent = "Test de la requête...";
+    requeter(
+        verbe = evt.target.verbe.value,
+        chemin = evt.target.chemin.value,
+        entetes = evt.target.entetes.value.split("\n"),
+        corps = (evt.target.corps.value=="")?null:evt.target.corps.value,
+        suite = () => {
+            objM.textContent = "Requête effectuée";
+        }
+    );
+    chargement( "non" );
+}
+window.addEventListener(
+    "load",
+    () => {
+        document.querySelector( "#requete" ).addEventListener( "submit", tester );
+        chargement( "non" );
+    }
+);
+</script>
+<style type="text/css">
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+#page {
+    width: 100%;
+    max-width: 25em;
+    margin: auto;
+}
+h1 {
+    margin: 0px;
+    padding: 0.2em;
+    color: white;
+    text-align: center;
+    background: gray;
+}
+span.message {
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 1em;
+    font-size: 80%;
+    font-style: italic;
+    text-align: center;
+    color: gray;
+}
+fieldset {
+    padding: 0.5em;
+    border: 0px;
+    border-top: dashed 1px gray;
+}
+fieldset+fieldset {
+    margin-top: 1em;
+}
+legend {
+    margin: auto;
+    padding: 0.1em 0.5em;
+    color: white;
+    border: solid 1px white;
+    background: gray;
+}
+input, textarea {
+    width: 100%;
+}
+#reponse {
+    width: 90%;
+    margin: 1em auto;
+}
+#chargement {
+    display: block;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background: rgba( 0, 0, 0, 0.5 );
+}
+#chargement[attendre="non"] {
+    display: none;
+}
+</style>
+</head>
+<body>
+<div id="page">
+    <h1>
+        Conceveur de requêtes
+    </h1>
+    <form id="requete">
+        <span class="message"></span>
+        <fieldset>
+            <legend>Verbe</legend>
+            <input type="text" name="verbe" value="GET" />
+        </fieldset>
+        <fieldset>
+            <legend>Chemin</legend>
+            <input type="text" name="chemin" value="/" />
+        </fieldset>
+        <fieldset>
+            <legend>Entêtes (1/ligne)</legend>
+            <textarea name="entetes"></textarea>
+        </fieldset>
+        <fieldset>
+            <legend>Corps</legend>
+            <textarea name="corps"></textarea>
+        </fieldset>
+        <input type="submit" value="tester" />
+    </form>
+    <pre id="reponse"></pre>
+    <div id="chargement" attendre="oui"></div>
+</div>
+</body>
+</html>
